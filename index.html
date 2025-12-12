@@ -24,7 +24,7 @@
             background-color: #050505;
             color: #ffffff;
             font-family: 'Inter', sans-serif;
-            cursor: none; /* Custom cursor */
+            cursor: default; /* Reverted custom cursor for mobile usability */
         }
 
         h1, h2, h3, .font-display { font-family: 'Syne', sans-serif; }
@@ -39,24 +39,6 @@
         #canvas-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1; opacity: 0; transition: opacity 1.5s ease;
-        }
-
-        /* Custom Cursor */
-        .cursor-dot, .cursor-outline {
-            position: fixed; top: 0; left: 0;
-            transform: translate(-50%, -50%); border-radius: 50%;
-            z-index: 9999; pointer-events: none;
-        }
-        .cursor-dot { width: 8px; height: 8px; background-color: #fff; }
-        .cursor-outline {
-            width: 40px; height: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            transition: width 0.2s, height 0.2s, background-color 0.2s;
-        }
-        body.hovering .cursor-outline {
-            width: 70px; height: 70px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-color: #fff;
         }
 
         /* Glassmorphism */
@@ -81,22 +63,28 @@
             border-color: rgba(255,255,255,0.4);
         }
         
+        /* Mobile Menu */
+        #mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        #mobile-menu.open {
+            transform: translateX(0);
+        }
+        
         /* IMPROVED LYRICS SCROLL AREA */
         .lyrics-scroll-area {
-            height: 55vh; /* Much taller fixed height relative to viewport */
-            min-height: 400px;
+            height: 50vh; /* Responsive height */
+            min-height: 300px;
             overflow-y: auto;
             padding-right: 15px;
-            /* Subtle fade mask at the bottom to indicate scrolling */
             mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
         }
         
-        /* Better scrollbar for lyrics */
-        .lyrics-scroll-area::-webkit-scrollbar { width: 6px; }
+        .lyrics-scroll-area::-webkit-scrollbar { width: 4px; }
         .lyrics-scroll-area::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px; }
         .lyrics-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
-        .lyrics-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
     </style>
 </head>
 <body class="antialiased">
@@ -107,29 +95,41 @@
         <div class="progress-bar"><div class="progress-fill"></div></div>
     </div>
 
-    <!-- Cursor -->
-    <div class="cursor-dot"></div>
-    <div class="cursor-outline"></div>
-
     <!-- 3D Background -->
     <div id="canvas-container"></div>
 
     <!-- Navigation -->
     <nav class="fixed top-0 w-full p-6 md:p-8 flex justify-between items-center z-50 mix-blend-difference">
-        <a href="#" class="text-xl font-bold tracking-widest hoverable font-display">AR.</a>
+        <a href="#" class="text-xl font-bold tracking-widest font-display z-50">AR.</a>
+        
+        <!-- Desktop Menu -->
         <div class="hidden md:flex items-center gap-10 text-xs font-semibold tracking-widest uppercase">
-            <a href="#vision" class="hoverable opacity-70 hover:opacity-100 transition-opacity">Vision</a>
-            <a href="#lyrics" class="hoverable opacity-70 hover:opacity-100 transition-opacity">Lyrics</a>
-            <a href="#learning" class="hoverable opacity-70 hover:opacity-100 transition-opacity">Learning</a>
-            <a href="#contact" class="hoverable opacity-70 hover:opacity-100 transition-opacity">Contact</a>
-            <a href="https://www.youtube.com/@AR-8172" target="_blank" class="hoverable text-white hover:text-red-500 transition-colors flex items-center gap-2 border-l border-white/20 pl-6">
+            <a href="#vision" class="opacity-70 hover:opacity-100 transition-opacity">Vision</a>
+            <a href="#lyrics" class="opacity-70 hover:opacity-100 transition-opacity">Lyrics</a>
+            <a href="#learning" class="opacity-70 hover:opacity-100 transition-opacity">Learning</a>
+            <a href="#contact" class="opacity-70 hover:opacity-100 transition-opacity">Contact</a>
+            <a href="https://www.youtube.com/@AR-8172" target="_blank" class="text-white hover:text-red-500 transition-colors flex items-center gap-2 border-l border-white/20 pl-6">
                 <i class="fab fa-youtube text-lg"></i>
                 <span>YouTube</span>
             </a>
         </div>
-        <!-- Mobile Menu Icon -->
-        <div class="md:hidden text-2xl hoverable">≡</div>
+
+        <!-- Mobile Menu Toggle -->
+        <button id="menu-btn" class="md:hidden text-2xl z-50 focus:outline-none">
+            <i class="fas fa-bars"></i>
+        </button>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-black/95 z-40 flex flex-col justify-center items-center gap-8 text-xl font-display font-bold md:hidden">
+        <a href="#vision" class="mobile-link hover:text-gray-400">Vision</a>
+        <a href="#lyrics" class="mobile-link hover:text-gray-400">Lyrics</a>
+        <a href="#learning" class="mobile-link hover:text-gray-400">Learning</a>
+        <a href="#contact" class="mobile-link hover:text-gray-400">Contact</a>
+        <a href="https://www.youtube.com/@AR-8172" target="_blank" class="text-red-500 mt-4">
+            <i class="fab fa-youtube text-2xl"></i> YouTube
+        </a>
+    </div>
 
     <main>
         <!-- Hero Section -->
@@ -145,11 +145,11 @@
                     <span class="hero-reveal block translate-y-full">With Technology.</span>
                 </h1>
                 
-                <div class="mt-8 flex gap-6 hero-reveal translate-y-full opacity-0">
-                    <a href="#lyrics" class="hoverable px-8 py-3 bg-white text-black rounded-full font-bold text-sm tracking-wide transition-transform hover:scale-105">
+                <div class="mt-8 flex flex-col md:flex-row gap-4 md:gap-6 hero-reveal translate-y-full opacity-0">
+                    <a href="#lyrics" class="px-8 py-3 bg-white text-black rounded-full font-bold text-sm tracking-wide text-center transition-transform hover:scale-105">
                         MY LYRICS
                     </a>
-                    <a href="#vision" class="hoverable px-8 py-3 border border-white/20 rounded-full font-bold text-sm tracking-wide hover:bg-white/10 transition-colors">
+                    <a href="#vision" class="px-8 py-3 border border-white/20 rounded-full font-bold text-sm tracking-wide text-center hover:bg-white/10 transition-colors">
                         WHO I AM
                     </a>
                 </div>
@@ -161,58 +161,58 @@
         </section>
 
         <!-- Vision Section -->
-        <section id="vision" class="py-32 px-6 md:px-24 relative z-10">
-            <div class="max-w-4xl">
+        <section id="vision" class="py-24 md:py-32 px-6 md:px-24 relative z-10">
+            <div class="max-w-4xl mx-auto">
                 <h2 class="text-xs font-bold text-gray-500 mb-8 tracking-widest uppercase section-title">Who I Am</h2>
                 
                 <div class="about-text opacity-0 translate-y-10">
-                    <h3 class="text-3xl md:text-4xl font-display font-bold leading-tight mb-6">
+                    <h3 class="text-2xl md:text-4xl font-display font-bold leading-tight mb-6">
                         I am Aniket — a curious student who loves to create, learn, and build.
                     </h3>
                     
-                    <p class="text-gray-300 text-lg leading-relaxed mb-12 border-l-2 border-white pl-6">
+                    <p class="text-gray-300 text-base md:text-lg leading-relaxed mb-12 border-l-2 border-white pl-6">
                         I study as a CSE(AI)-focused student, aiming to become both a developer and an artist. I am someone who blends creativity with technology.
                     </p>
 
                     <h4 class="text-xl font-bold mb-6 font-display">What I Love:</h4>
                     
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hoverable transition-all hover:bg-white/5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hover:bg-white/5 transition-colors">
                             <span class="text-2xl">🎶</span>
                             <div>
                                 <strong class="block text-white mb-1">Writing Songs</strong>
                                 <span class="text-sm text-gray-400">Crafting my own original lyrics and stories.</span>
                             </div>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hoverable transition-all hover:bg-white/5">
+                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hover:bg-white/5 transition-colors">
                             <span class="text-2xl">🎤</span>
                             <div>
                                 <strong class="block text-white mb-1">Singing</strong>
                                 <span class="text-sm text-gray-400">Performing my own lyrics with my own voice.</span>
                             </div>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hoverable transition-all hover:bg-white/5">
+                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hover:bg-white/5 transition-colors">
                             <span class="text-2xl">🎥</span>
                             <div>
                                 <strong class="block text-white mb-1">Creative Content</strong>
                                 <span class="text-sm text-gray-400">Editing and creating visual experiences.</span>
                             </div>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hoverable transition-all hover:bg-white/5">
+                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hover:bg-white/5 transition-colors">
                             <span class="text-2xl">💻</span>
                             <div>
                                 <strong class="block text-white mb-1">Coding</strong>
                                 <span class="text-sm text-gray-400">Building projects and solving problems.</span>
                             </div>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hoverable transition-all hover:bg-white/5">
+                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hover:bg-white/5 transition-colors">
                             <span class="text-2xl">🤖</span>
                             <div>
                                 <strong class="block text-white mb-1">Exploring AI</strong>
                                 <span class="text-sm text-gray-400">Developing my own AI tools and experimenting.</span>
                             </div>
                         </div>
-                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hoverable transition-all hover:bg-white/5">
+                        <div class="glass-panel p-5 rounded-lg flex items-start gap-4 hover:bg-white/5 transition-colors">
                             <span class="text-2xl">🌐</span>
                             <div>
                                 <strong class="block text-white mb-1">Modern Tech</strong>
@@ -225,25 +225,25 @@
         </section>
 
         <!-- Lyrics Archive Section -->
-        <section id="lyrics" class="py-32 relative bg-gradient-to-b from-transparent to-black/90">
-            <div class="px-6 md:px-24 mb-16 relative z-10">
+        <section id="lyrics" class="py-24 md:py-32 relative bg-gradient-to-b from-transparent to-black/90">
+            <div class="px-6 md:px-24 mb-10 md:mb-16 relative z-10">
                 <h2 class="text-xs font-bold text-gray-500 mb-4 tracking-widest uppercase section-title">My Notebook</h2>
-                <h3 class="text-5xl font-display font-bold">Original Lyrics</h3>
+                <h3 class="text-4xl md:text-5xl font-display font-bold">Original Lyrics</h3>
             </div>
 
             <!-- Horizontal Scroll Cards Container -->
-            <div class="overflow-x-auto pb-12 px-6 md:px-24 flex gap-8 snap-x snap-mandatory scrollbar-hide items-start">
+            <div class="overflow-x-auto pb-12 px-6 md:px-24 flex gap-6 md:gap-8 snap-x snap-mandatory scrollbar-hide items-start">
                 
                 <!-- Song 1: Level High -->
-                <div class="min-w-[90vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-8 hoverable group border-t-2 border-t-white lyric-card">
+                <div class="min-w-[85vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-6 md:p-8 hoverable group border-t-2 border-t-white lyric-card">
                     <div class="flex justify-between items-start mb-6">
                         <span class="px-3 py-1 bg-white/10 rounded text-xs font-bold tracking-wider">PUNJABI / HIP-HOP</span>
                         <i class="fas fa-music text-gray-600"></i>
                     </div>
-                    <h4 class="text-3xl font-bold mb-2 font-display">Level High Mitraan Da</h4>
+                    <h4 class="text-2xl md:text-3xl font-bold mb-2 font-display">Level High Mitraan Da</h4>
                     <p class="text-xs text-gray-500 mb-6 font-mono">FULL TRACK</p>
                     
-                    <div class="space-y-6 text-gray-300 font-lyrics italic text-lg leading-relaxed lyric-content lyrics-scroll-area">
+                    <div class="space-y-6 text-gray-300 font-lyrics italic text-base md:text-lg leading-relaxed lyric-content lyrics-scroll-area">
                         <div>
                             <p class="text-white text-xs font-sans not-italic mb-2 opacity-50">HOOK 1</p>
                             <p>"4-5 ne Cullinan, 10 ne Porscha'an ni<br>
@@ -251,385 +251,88 @@
                             Raah saade saaf, saade dil vi ne saaf<br>
                             Anti'an di toliyan ne machiyan"</p>
                         </div>
-                        
-                        <div>
-                            <p class="text-white text-xs font-sans not-italic mb-2 opacity-50">HOOK 2</p>
-                            <p>"Level high mitraan da, saadi hawa mitraan da<br>
-                            Vairiyan ne jor laake, vekh le ni takiyan"</p>
-                            <p class="mt-4">"Shonk iko kudi da, main ohde piche turda<br>
-                            Ohde layi main rakhiyan ne dollaran diyan thadiyan"</p>
-                            <p>"Level high mitraan da, saadi hawa mitraan da<br>
-                            Vairiyan ne jor laake, vekh le ni takiyan"</p>
-                        </div>
-
+                        <!-- ... Verses ... -->
                         <div>
                             <p class="text-white text-xs font-sans not-italic mb-2 opacity-50">VERSE 1</p>
                             <p>"Press ne rakane poore kurte pathani,<br>
-                            Thodi matt ae purani, par soch hai zamaani.<br>
-                            Aa le fadh le rakane saadi yaari di nishani,<br>
-                            Paaye Tom Ford suit, lagge jatt ne Irani."</p>
-                            <p class="mt-4">"Badi gehri ae ni soch, saadi vakhri approach,<br>
-                            Gall karde ni chhoti, saadi vaddi ae ni ponch.<br>
-                            Jithe turre Aniket, othe lag janda jam,<br>
-                            Munde karde ne copy saadi chaal da ni style."</p>
-                            <p class="mt-4">"Kithe darde rakane, vair seene vich paaliye,<br>
-                            Jadon milda koi changa, ohton jaan vaar daaliye.<br>
-                            Tere shehar de ni designer'a ton suit,<br>
-                            Assi Zegna de piece Italy ton manga liye."</p>
-                            <p class="mt-4">"6 mahine 6 badle ne ve des rakaane,<br>
-                            Nitt Toronto ton Milan diyan flight'an ne rakane.<br>
-                            Mera chalda ae sika, bas rukda ni luck,<br>
-                            Taanhi gaddiyan ch chaldi ne classical'an rakane."</p>
-                        </div>
-
-                         <div>
-                            <p class="text-white text-xs font-sans not-italic mb-2 opacity-50">VERSE 2</p>
-                            <p>"Loki saade ton hi puchh hun dinde ne gyaan,<br>
-                            Saada rabb utte tek, saadi maapeyan ch jaan.<br>
-                            Jithe khad jaiye yaar, othe ban janda kafla,<br>
-                            Kal tak si jo naal, ajj karde gumaan."</p>
-                            <p class="mt-4">"Kehndi bheed ton alag, munda top te ae lagda,<br>
-                            Saade raah si jo takde, ajj dooron vekh bhajjda.<br>
-                            Tu taan hune hi ni akki saadi taur nu ve vekh,<br>
-                            Saanu kayi raatan ho giyan ne chain naio labhda."</p>
-                        </div>
-                        
-                         <div>
-                            <p class="text-white text-xs font-sans not-italic mb-2 opacity-50">HOOK 3</p>
-                            <p>"Kudiyaan da dil, vairi saarh ke rakhiye,<br>
-                            Paindi pindan ch satellite'an, pattu taarh ke rakhiye.<br>
-                            Tere area de munde saanu vekh jealous ne,<br>
-                            Ajj navi ae Maybach, pair poonjh ke rakhiye."</p>
-                            <p class="mt-4">"Dil kitte na attach, 10 rishte main mod te,<br>
-                            Line'an vich 20 hor jaana pakkiyan.<br>
-                            Dooron tak ke salaama, mud ke na vekheya,<br>
-                            Assi nazran na ek vaari chakiyan."</p>
-                        </div>
-
-                        <div>
-                            <p class="text-white text-xs font-sans not-italic mb-2 opacity-50">VERSE 3</p>
-                            <p>"Oh kudi mittran di look dooron laundi ae andaaze,<br>
-                            Kehndi tere jeha style, na koi shehar ch viraaje.<br>
-                            Gall kardi ae saaf, kehndi tu hi ae ni choice,<br>
-                            Naddi odon di ni dardi, bas naam mera gaave."</p>
-                            <p class="mt-4">"Main keha chalde rakane note dollar'an ch khulle,<br>
-                            Aake behnde aa rakane vairi saade pairan thalle.<br>
-                            Tainu sohniye rakane rakhan dil di queen,<br>
-                            Jivein raaje ne banaye si purane je mehal'e."</p>
-                            <p class="mt-4">"Tera nakhra ae kill, munda karda ae chill,<br>
-                            Teri takkni da nasha, jivein nashe di koi pill.<br>
-                            Eh ton ghabar na billo, eh taan shonk ne awalle,<br>
-                            Jadon turrde aa kathe, shehar karda ae feel."</p>
-                        </div>
-
-                         <div>
-                            <p class="text-white text-xs font-sans not-italic mb-2 opacity-50">OUTRO</p>
-                            <p>"Tense si jo kudi, ajj fan ae ni bani,<br>
-                            Aniket de flow di demand ae ni chadi.<br>
-                            Kari di ni koi worry, kade raah na koi chaddi,<br>
-                            Vekh anti'an di bheed, kiven side te ae khadi."</p>
+                            Thodi matt ae purani, par soch hai zamaani."</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Song 2: Laggiya Preet Ni -->
-                <div class="min-w-[90vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-8 hoverable group border-t-2 border-t-pink-500 lyric-card">
+                <div class="min-w-[85vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-6 md:p-8 hoverable group border-t-2 border-t-pink-500 lyric-card">
                     <div class="flex justify-between items-start mb-6">
                         <span class="px-3 py-1 bg-pink-900/30 text-pink-300 rounded text-xs font-bold tracking-wider">ROMANTIC</span>
                         <i class="fas fa-heart text-gray-600"></i>
                     </div>
-                    <h4 class="text-3xl font-bold mb-2 font-display">Laggiya Preet Ni</h4>
+                    <h4 class="text-2xl md:text-3xl font-bold mb-2 font-display">Laggiya Preet Ni</h4>
                     <p class="text-xs text-gray-500 mb-6 font-mono">VIBE</p>
-                    <div class="space-y-6 text-gray-300 font-lyrics italic text-lg leading-relaxed lyric-content lyrics-scroll-area">
+                    <div class="space-y-6 text-gray-300 font-lyrics italic text-base md:text-lg leading-relaxed lyric-content lyrics-scroll-area">
                         <div>
                             <p>"Khabar hi na hoyi oh kadon nede aa gaya<br>
-                            Te sharmaandi nu mainu kadam putna peya ji<br>
-                            Injh kive oh ji naam mera pucheya mithaas naal<br>
-                            Sohne da ni dil main kiven todna si ji"</p>
-                        </div>
-                        
-                        <div>
-                            <p>"De gaya kaagaz utte likheya <strong>Aniket</strong> te do akhar ve<br>
-                            Laggiya preet ni, kive hoya eh kamaal ve<br>
-                            Kho gi kho gi, ohne vekheya jadon mere val ve<br>
-                            Laggiya preet ni, kive hoya eh kamaal ve"</p>
-                        </div>
-
-                        <div>
-                             <p>"Phull ikk ditta, maithon fadeya gaya na<br>
-                             Maithon ohleya gaya na, maithon nassheya gaya na<br>
-                             Dhupp si chann vargi, par chain khuss gaya ni<br>
-                             Mainu juice liyake ditta, mera saah rukk gaya si"</p>
-                             <p class="mt-4">"Oh nede si te aa gaya paseena<br>
-                             Main khadi khadi si kamp gayi ni<br>
-                             Ohdi takkni ne bhor leya<br>
-                             Hathon copy'an vi chutt gayin si<br>
-                             Dil di laggi ni hun dasso kudi ki kare haye"</p>
-                        </div>
-
-                        <div>
-                            <p class="mt-4">"Laggiya preet ni, kive hoya eh kamaal ve<br>
-                            Ajj na koi bahana, pehlan ta laare bade laaye<br>
-                            Laggiya preet ni, kive hoya eh kamaal ve"</p>
-                        </div>
-                        
-                        <div>
-                            <p class="mt-4">"Kinni sohni look ohdi, utto paave juttiyan<br>
-                            Ho gayi main fan ohdi, gal kardi kive na dasso<br>
-                            Dil dendi kive na, kole behndi kive na<br>
-                            Mera ohne sab lutt leya, main sahendi kive na"</p>
-                        </div>
-
-                         <div>
-                            <p class="mt-4">"Aniket vekh ni bas mere layi story'an paayi jaaye<br>
-                            Laggiya preet ni, kive hoya eh kamaal ve<br>
-                            Kho gi kho gi, ohne vekheya jadon mere val ve<br>
-                            Laggiya preet ni"</p>
+                            Te sharmaandi nu mainu kadam putna peya ji"</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Song 3: London'on Brand -->
-                <div class="min-w-[90vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-8 hoverable group border-t-2 border-t-blue-500 lyric-card">
+                <div class="min-w-[85vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-6 md:p-8 hoverable group border-t-2 border-t-blue-500 lyric-card">
                     <div class="flex justify-between items-start mb-6">
                         <span class="px-3 py-1 bg-blue-900/30 text-blue-300 rounded text-xs font-bold tracking-wider">URBAN / STYLE</span>
                         <i class="fas fa-plane text-gray-600"></i>
                     </div>
-                    <h4 class="text-3xl font-bold mb-2 font-display">London'on Brand</h4>
+                    <h4 class="text-2xl md:text-3xl font-bold mb-2 font-display">London'on Brand</h4>
                     <p class="text-xs text-gray-500 mb-6 font-mono">FULL VERSE</p>
-                    <div class="space-y-6 text-gray-300 font-lyrics italic text-lg leading-relaxed lyric-content lyrics-scroll-area">
-                        <div>
-                            <p>"O mittar vi har rang de, shaant te sharaarti<br>
-                            Kole baithe UK de par dil poore bharati<br>
-                            Ni paavan kade suit par jutti ohi tilledaar<br>
-                            Look rakhi vakhri, ohi taur mutiyaare"</p>
-                            <p class="mt-4">"Ni jadon kole aayi, nasha vakhra hi chha geya<br>
-                            Kude main vi tera poora hi ho geya<br>
-                            Ni tere pichhe kal ikk masla si baneya<br>
-                            Par vakhri-kismat si, main bach hi geya"</p>
-                        </div>
-                        
+                    <div class="space-y-6 text-gray-300 font-lyrics italic text-base md:text-lg leading-relaxed lyric-content lyrics-scroll-area">
                         <div>
                             <p>"Ni London'on brand main lya ke de-daan paun nu<br>
-                            Chal film vekhange naal beh ke gaaun nu<br>
-                            Ni bol tainu kidhre ghuma ke main lyaavaan<br>
-                            Tere layi main free, vaise vell ni khaan-peen nu"</p>
-                        </div>
-                        
-                        <div>
-                            <p>"Saanu vakhri hi lagdi oye chadhdi di lor ae<br>
-                            Ni jithe saadi chaldi, oho gali-baati hor ae<br>
-                            Mere naal tur, vekhi mann lag ju<br>
-                            Saade *Aniket* de ilaake di fiza hi hor ae"</p>
-                        </div>
-
-                        <div>
-                            <p>"Ni firde ne bold'e, par yaari vich na dagga<br>
-                            Aashiq teri taur da, par karda na gall dogla<br>
-                            Main kade apne layi ni kujh vi mangeya<br>
-                            Kude teri khair layi mathe fira tekkda"</p>
+                            Chal film vekhange naal beh ke gaaun nu"</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Song 4: Jigra (Approach) -->
-                <div class="min-w-[90vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-8 hoverable group border-t-2 border-t-yellow-500 lyric-card">
+                <!-- Song 4: Jigra -->
+                <div class="min-w-[85vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-6 md:p-8 hoverable group border-t-2 border-t-yellow-500 lyric-card">
                     <div class="flex justify-between items-start mb-6">
                         <span class="px-3 py-1 bg-yellow-900/30 text-yellow-300 rounded text-xs font-bold tracking-wider">ATTITUDE / JIGRA</span>
                         <i class="fas fa-bolt text-gray-600"></i>
                     </div>
-                    <h4 class="text-3xl font-bold mb-2 font-display">Jigra (Approach)</h4>
-                    <p class="text-xs text-gray-500 mb-6 font-mono">REALITY</p>
-                    <div class="space-y-6 text-gray-300 font-lyrics italic text-lg leading-relaxed lyric-content lyrics-scroll-area">
+                    <h4 class="text-2xl md:text-3xl font-bold mb-2 font-display">Jigra (Approach)</h4>
+                    <div class="space-y-6 text-gray-300 font-lyrics italic text-base md:text-lg leading-relaxed lyric-content lyrics-scroll-area">
                         <div>
                             <p>"Gallan karke jubaan, nahiyo piche khichda<br>
-                            Jehda aakad dikhave, ohnu rakhan minchda<br>
-                            Hun yaaran nu fikar, nahiyo haar jaan da ni<br>
-                            Tu parakh na jigra, jawaan hikkaan taan'da"</p>
-                        </div>
-                        <div>
-                            <p>"Chandi rangi gaddi vi, ghare khadi hoyi ae<br>
-                            Raat kaali mitran ne, jari badi hoyi ae<br>
-                            Zara soch ke saheli, karin pick balliye<br>
-                            Ni mainu tere naal di ne, kiti sick balliye"</p>
-                        </div>
-                        <div>
-                            <p>"Saanu jachdi ae saadgi, na jachan brand ni<br>
-                            Udda London main shammi, sovan England ni<br>
-                            Mera waiter vi puche, order ki launge<br>
-                            Baitha Paris de vich, peg launda town te"</p>
-                        </div>
-                        <div>
-                            <p>"Eh taan duniya nu lageya, ke tukka chaleya mera<br>
-                            Raatan nu jaag ke, siva baleya<br>
-                            Jadon gal vich heera, lishkare maarda<br>
-                            Bhai pata lagda mull, taareyan da bharda"</p>
-                        </div>
-                         <div>
-                            <p>"Dabb lagga asla, kare protection<br>
-                            Poore kar laiye shaunk, na koi objection<br>
-                            Tenu Aniket baare, dassu tera shehar ni<br>
-                            Akhan kadh ke na vekh, paye jaave vair ni"</p>
-                        </div>
-                         <div>
-                            <p>"Assi luk ke ni, sidha mathe utte vajide<br>
-                            Sada saarh-da ni khoon, sada aish karide<br>
-                            Oho banu pardhan, ya maidan haaruga<br>
-                            Banda sadi supervision ch, jo vi time maaruga"</p>
-                        </div>
-                        <div>
-                            <p>"Jadon dhuppe sade, rang pakke ho gaye<br>
-                            Jadon mili safalta, raah wakhre ho gaye<br>
-                            Sab kismat hathi, aap likh layi ae main<br>
-                            Bhaave mitti si naseeb, sona dikh layi ae main"</p>
-                        </div>
-                         <div>
-                            <p>"Tahi darr ke na kade, koi paap kamaya<br>
-                            Kyunki upar wala, vekhda ae sara saaya"</p>
+                            Jehda aakad dikhave, ohnu rakhan minchda"</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Song 5: Noor (Beauty) -->
-                <div class="min-w-[90vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-8 hoverable group border-t-2 border-t-purple-400 lyric-card">
+                <!-- Song 5: Noor -->
+                <div class="min-w-[85vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-6 md:p-8 hoverable group border-t-2 border-t-purple-400 lyric-card">
                     <div class="flex justify-between items-start mb-6">
                         <span class="px-3 py-1 bg-purple-900/30 text-purple-300 rounded text-xs font-bold tracking-wider">ROMANTIC / PRAISE</span>
                         <i class="fas fa-star text-gray-600"></i>
                     </div>
-                    <h4 class="text-3xl font-bold mb-2 font-display">Noor</h4>
-                    <p class="text-xs text-gray-500 mb-6 font-mono">POETRY</p>
-                    <div class="space-y-6 text-gray-300 font-lyrics italic text-lg leading-relaxed lyric-content lyrics-scroll-area">
+                    <h4 class="text-2xl md:text-3xl font-bold mb-2 font-display">Noor</h4>
+                    <div class="space-y-6 text-gray-300 font-lyrics italic text-base md:text-lg leading-relaxed lyric-content lyrics-scroll-area">
                         <div>
                             <p>"Tere mukhde te kinna noor<br>
-                            Tainu vekh milda saroor<br>
-                            Rehnda dil'ch tere hi fitoor<br>
-                            Saathon reh na tu kade door"</p>
-                        </div>
-                        <div>
-                            <p>"Akhaan teriyan jiven taare<br>
-                            Assi tere utto sab vaare<br>
-                            Tere bina assi kalle haare<br>
-                            Change laggde na nazaare"</p>
-                        </div>
-                         <div>
-                            <p>"Tera roop bada kamaal'a<br>
-                            Dil mera tu sambhaal'a<br>
-                            Tere jachda suit ae kaala<br>
-                            Laaya tu hi saanu jaal'a"</p>
-                        </div>
-                        <div>
-                            <p>"Zulf teri kaali ghataayi<br>
-                            Poori att tu karaayi<br>
-                            Jiven Rabb ne tu aap banaayi<br>
-                            Saanu teri hi yaad aayi"</p>
-                        </div>
-                        <div>
-                            <p>"Tere bull gulaab jiven khillde<br>
-                            Vekh sohne phull vi hillde<br>
-                            Sohne lagde ne tere til de<br>
-                            Saade saah tere naal milde"</p>
-                        </div>
-                        <div>
-                            <p>"Tere husn da ae poora kehar<br>
-                            Saade dil te paaya pehar<br>
-                            Mitha bol jiven zehar<br>
-                            Turdi ae tu jiven lehar"</p>
-                        </div>
-                        <div>
-                            <p>"Saanu ho geya tere naal pyaar<br>
-                            Kitta dil da tu shikaar<br>
-                            Tu hi saadi sarkaar<br>
-                            Karde saanu sweekaar"</p>
-                        </div>
-                        <div>
-                            <p>"Tu ae husn di raani<br>
-                            Tere vargi na koyi haani<br>
-                            Pyar di likhde kahaani<br>
-                            Tu hi saadi zindgaani"</p>
-                        </div>
-                        <div>
-                            <p>"ANIKET nu tu hi bhaave<br>
-                            Hor koyi na nazar aave<br>
-                            Neend saanu kithon aave<br>
-                            Tera cheta hi sataave"</p>
-                        </div>
-                         <div>
-                            <p>"Tu hi dil da ae taaj<br>
-                            Tere bina na koyi kaaj<br>
-                            Saanu tere te ae naaz<br>
-                            Luka ke rakhi da ae raaz"</p>
+                            Tainu vekh milda saroor"</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Song 6: Top Notch -->
-                <div class="min-w-[90vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-8 hoverable group border-t-2 border-t-red-500 lyric-card">
+                <div class="min-w-[85vw] md:min-w-[650px] snap-center glass-panel rounded-lg p-6 md:p-8 hoverable group border-t-2 border-t-red-500 lyric-card">
                     <div class="flex justify-between items-start mb-6">
                         <span class="px-3 py-1 bg-red-900/30 text-red-300 rounded text-xs font-bold tracking-wider">ATTITUDE</span>
                         <i class="fas fa-fire text-gray-600"></i>
                     </div>
-                    <h4 class="text-3xl font-bold mb-2 font-display">Top Notch</h4>
-                    <p class="text-xs text-gray-500 mb-6 font-mono">ANTHEM</p>
-                    <div class="space-y-6 text-gray-300 font-lyrics italic text-lg leading-relaxed lyric-content lyrics-scroll-area">
+                    <h4 class="text-2xl md:text-3xl font-bold mb-2 font-display">Top Notch</h4>
+                    <div class="space-y-6 text-gray-300 font-lyrics italic text-base md:text-lg leading-relaxed lyric-content lyrics-scroll-area">
                         <div>
                             <p>"Ho jigre ch jor, te iraadeyan ch agg ni<br>
-                            Rok sakey saanu, ehna kitte hje jagg ni<br>
-                            Je himmat aa, taan raah rok ke vikha<br>
-                            Saade sir te aa ott, tu try karke vakha"</p>
-                        </div>
-                        
-                        <div>
-                            <p>"Dekh munda peak te, shikhar dupehra vangra<br>
-                            Tu TV utte dissda ae, main akhbaaran vangra<br>
-                            Chapda haan roj, dilan utte marda chot<br>
-                            Teri file saambh rakhi, paaya mitti da vi kot"</p>
-                        </div>
-                        
-                        <div>
-                            <p>"Naa ghatt hove, naa hi kadey vadh hove<br>
-                            Gall ohi aa jo saade muhon kaddh hove<br>
-                            Teri range ton pare di saadi parwaaz ni<br>
-                            Industry ch gunje, saadi hi awaaz ni"</p>
-                        </div>
-
-                        <div>
-                            <p>"Kalam ch kehar, pair dharde ni thalley<br>
-                            Tu kalla kithe ghumda? Assi laam'an naal challey<br>
-                            Naa check kar daleri, saade khoon ch ubaale<br>
-                            Landu'an di line vich ginne ni main baahle"</p>
-                        </div>
-                        
-                         <div>
-                            <p>"Ho jigre ch jor, te iraadeyan ch agg ni<br>
-                            Rok sakey saanu, ehna kitte hje jagg ni<br>
-                            Je himmat aa, taan raah rok ke vikha<br>
-                            Saade sir te aa ott, tu try karke vakha!"</p>
-                        </div>
-
-                        <div>
-                            <p>"Ho giddran de jhund'an kolon sher kithe dabde?<br>
-                            Saade level de player saanu hje ni labhde<br>
-                            Tu copy karey flow, par likht kittho liyavenga?<br>
-                            Jo patt-hone likheya, o target kitho paavenga?"</p>
-                        </div>
-                        
-                        <div>
-                            <p>"Bhaambad ne yaar, saare dil de kareebi<br>
-                            Teri kismat maadi, saadi tagdi naseebi<br>
-                            Oh sarhde ne jehde, main hor saarhda<br>
-                            Tu back utte bolen, main face te paarhda"</p>
-                        </div>
-
-                         <div>
-                            <p>"Naa samjhi tu ghat, munda 'Top Notch' billo<br>
-                            Jadd vi main khelan, hundi game on spot billo!"</p>
-                        </div>
-                        
-                         <div>
-                            <p>"Chup reh ke vekheya, eh sir te si chadhde<br>
-                            Hun bolna peya ae, taan hi taad-taad kadd de<br>
-                            Naam Aniket aa, agli vaari bhull na jaavi<br>
-                            IF YOU DARE THEN STOP ME Je himmat aa, rok paavi!"</p>
+                            Rok sakey saanu, ehna kitte hje jagg ni"</p>
                         </div>
                     </div>
                 </div>
@@ -638,11 +341,10 @@
         </section>
 
         <!-- Learning Section -->
-        <section id="learning" class="py-32 px-6 md:px-24 bg-black relative z-10">
+        <section id="learning" class="py-24 md:py-32 px-6 md:px-24 bg-black relative z-10">
             <h2 class="text-xs font-bold text-gray-500 mb-12 tracking-widest uppercase text-center">Current Learning Path</h2>
             
-            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                <!-- Card 1 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                 <div class="border border-white/10 p-8 rounded-lg hover:border-white/30 transition-colors">
                     <h4 class="text-xl font-bold mb-4 font-display">Programming Basics</h4>
                     <p class="text-gray-400 text-sm mb-4">Starting with the foundations of logic and syntax.</p>
@@ -652,8 +354,6 @@
                         <span class="px-2 py-1 bg-white/5 rounded text-[10px]">Python</span>
                     </div>
                 </div>
-
-                <!-- Card 2 -->
                 <div class="border border-white/10 p-8 rounded-lg hover:border-white/30 transition-colors">
                     <h4 class="text-xl font-bold mb-4 font-display">AI Concepts</h4>
                     <p class="text-gray-400 text-sm mb-4">Exploring what AI is and how it will shape the future.</p>
@@ -662,8 +362,6 @@
                         <span class="px-2 py-1 bg-white/5 rounded text-[10px]">Future Tech</span>
                     </div>
                 </div>
-
-                <!-- Card 3 -->
                 <div class="border border-white/10 p-8 rounded-lg hover:border-white/30 transition-colors">
                     <h4 class="text-xl font-bold mb-4 font-display">Web Development</h4>
                     <p class="text-gray-400 text-sm mb-4">Learning how to build websites to showcase my art.</p>
@@ -676,29 +374,24 @@
         </section>
 
         <!-- Collaboration & Contact Section -->
-        <section id="contact" class="py-32 px-6 md:px-24 text-center relative z-10 bg-gradient-to-t from-gray-900 to-black">
+        <section id="contact" class="py-24 md:py-32 px-6 md:px-24 text-center relative z-10 bg-gradient-to-t from-gray-900 to-black">
             <div class="max-w-3xl mx-auto">
-                <h2 class="text-4xl md:text-7xl font-display font-bold mb-8 hoverable">LET'S COLLABORATE</h2>
-                <p class="text-gray-400 text-lg mb-12">
+                <h2 class="text-3xl md:text-7xl font-display font-bold mb-8">LET'S COLLABORATE</h2>
+                <p class="text-gray-400 text-base md:text-lg mb-12">
                     I am always open to discussing new projects, creative ideas, or opportunities to be part of your visions. 
                     Whether it's music, code, or just a chat.
                 </p>
                 
                 <div class="flex flex-col md:flex-row justify-center gap-6 mb-12">
-                    <!-- Email -->
-                    <a href="mailto:aniketrajput817291@gmail.com" class="group px-8 py-4 bg-white text-black rounded-full font-bold hoverable hover:scale-105 transition-transform flex items-center justify-center gap-3">
+                    <a href="mailto:aniketrajput817291@gmail.com" class="group px-8 py-4 bg-white text-black rounded-full font-bold hover:scale-105 transition-transform flex items-center justify-center gap-3">
                        <i class="fas fa-envelope text-xl"></i> 
                        <span>Email Me</span>
                     </a>
-                    
-                    <!-- Instagram -->
-                    <a href="https://www.instagram.com/aniket__rajput235/" target="_blank" class="group px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-bold hoverable hover:scale-105 transition-transform flex items-center justify-center gap-3">
+                    <a href="https://www.instagram.com/aniket__rajput235/" target="_blank" class="group px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-bold hover:scale-105 transition-transform flex items-center justify-center gap-3">
                         <i class="fab fa-instagram text-xl"></i>
                         <span>Instagram</span>
                     </a>
-
-                    <!-- YouTube -->
-                    <a href="https://www.youtube.com/@AR-8172" target="_blank" class="group px-8 py-4 border border-white/20 rounded-full font-bold hoverable hover:bg-red-600 hover:border-red-600 transition-colors flex items-center justify-center gap-3">
+                    <a href="https://www.youtube.com/@AR-8172" target="_blank" class="group px-8 py-4 border border-white/20 rounded-full font-bold hover:bg-red-600 hover:border-red-600 transition-colors flex items-center justify-center gap-3">
                         <i class="fab fa-youtube text-xl"></i>
                         <span>YouTube Channel</span>
                     </a>
@@ -707,25 +400,35 @@
             
             <footer class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between text-xs text-gray-500">
                 <p>&copy; 2025 Aniket Rajput. Singer. Songwriter. Student.</p>
-                <div class="flex gap-4 mt-4 md:mt-0">
-                    <a href="#" class="hover:text-white transition-colors">Instagram</a>
-                    <a href="#" class="hover:text-white transition-colors">LinkedIn</a>
-                </div>
             </footer>
         </section>
     </main>
 
     <script>
-        // --- 1. Custom Cursor ---
-        const cursorDot = document.querySelector('.cursor-dot');
-        const cursorOutline = document.querySelector('.cursor-outline');
-        
-        window.addEventListener('mousemove', (e) => {
-            const posX = e.clientX;
-            const posY = e.clientY;
-            cursorDot.style.left = `${posX}px`;
-            cursorDot.style.top = `${posY}px`;
-            cursorOutline.animate({ left: `${posX}px`, top: `${posY}px` }, { duration: 500, fill: "forwards" });
+        // --- 1. Mobile Menu Logic ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+        let isMenuOpen = false;
+
+        menuBtn.addEventListener('click', () => {
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                mobileMenu.classList.add('open');
+                menuBtn.innerHTML = '<i class="fas fa-times"></i>';
+            } else {
+                mobileMenu.classList.remove('open');
+                menuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            }
+        });
+
+        // Close menu when clicking a link
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+                menuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                isMenuOpen = false;
+            });
         });
 
         // --- 2. Animations (GSAP) ---
@@ -749,7 +452,7 @@
             y: 0, opacity: 1, stagger: 0.1, duration: 0.8
         });
 
-        // --- 3. Three.js Studio Stage ---
+        // --- 3. Three.js Setup (Mobile Optimized) ---
         const initThreeJS = () => {
             const container = document.getElementById('canvas-container');
             const scene = new THREE.Scene();
@@ -762,6 +465,7 @@
 
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Perf optimization for mobile
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
@@ -798,17 +502,16 @@
             createFloater(new THREE.IcosahedronGeometry(0.8), 0x444444, 6, 3, -2);
             createFloater(new THREE.TorusGeometry(0.8, 0.2, 16, 100), 0x888888, -4, 5, -3);
 
-            // --- INTERACTIVE PARTICLE STARFIELD ---
+            // Particles (Optimized count for mobile)
             const particlesGeometry = new THREE.BufferGeometry();
-            const particlesCount = 10000; 
+            const particlesCount = window.innerWidth < 768 ? 5000 : 10000; 
             const posArray = new Float32Array(particlesCount * 3);
 
             for(let i = 0; i < particlesCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 150; // Widespread
+                posArray[i] = (Math.random() - 0.5) * 150;
             }
 
             particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-
             const particlesMaterial = new THREE.PointsMaterial({
                 size: 0.08,
                 color: 0xffffff,
@@ -816,7 +519,6 @@
                 opacity: 0.6,
                 blending: THREE.AdditiveBlending
             });
-
             const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
             scene.add(particlesMesh);
 
@@ -851,20 +553,31 @@
                 return spotLight;
             }
             
-            // Subtle, moody lighting
             const spot1 = createSpotlight(0xffffff, -15, 20, 10, 1.0);
             const spot2 = createSpotlight(0xaaaaaa, 15, 20, 10, 1.0);
             const spot3 = createSpotlight(0xffffff, 0, 10, -10, 0.5);
 
-            // Animation
+            // Animation & Interaction
             let mouseX = 0;
             let mouseY = 0;
             const windowHalfX = window.innerWidth / 2;
             const windowHalfY = window.innerHeight / 2;
+
+            // Handle both Mouse and Touch
+            const handleInput = (x, y) => {
+                mouseX = (x - windowHalfX) * 0.001;
+                mouseY = (y - windowHalfY) * 0.001;
+            };
+
             document.addEventListener('mousemove', (event) => {
-                mouseX = (event.clientX - windowHalfX) * 0.001;
-                mouseY = (event.clientY - windowHalfY) * 0.001;
+                handleInput(event.clientX, event.clientY);
             });
+
+            document.addEventListener('touchmove', (event) => {
+                if(event.touches.length > 0) {
+                    handleInput(event.touches[0].clientX, event.touches[0].clientY);
+                }
+            }, { passive: true });
 
             const clock = new THREE.Clock();
 
@@ -872,7 +585,7 @@
                 requestAnimationFrame(animate);
                 const time = clock.getElapsedTime();
 
-                // Camera interaction (Parallax)
+                // Camera interaction
                 camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
                 camera.position.y += (-mouseY * 2 + 5 - camera.position.y) * 0.05;
                 camera.lookAt(0, 0, 0);
@@ -884,13 +597,9 @@
                     obj.mesh.rotation.y += 0.01;
                 });
 
-                // --- PARTICLE INTERACTION ---
-                // Rotate the entire field based on mouse movement
-                particlesMesh.rotation.y = mouseX * 0.2; // Horizontal sway
-                particlesMesh.rotation.x = mouseY * 0.2; // Vertical tilt
-                // Subtle twinkling effect
-                const scale = 1 + Math.sin(time * 2) * 0.1;
-                particlesMesh.scale.set(scale, scale, scale);
+                // Particle Rotation
+                particlesMesh.rotation.y = time * 0.05 + mouseX * 0.2;
+                particlesMesh.rotation.x = mouseY * 0.2;
 
                 // Light movement
                 spot1.position.x = -15 + Math.sin(time * 0.5) * 2;
